@@ -1,20 +1,68 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { StyleSheet, SafeAreaView, Text, View, useWindowDimensions } from 'react-native';
+import ProfileScreen from './screens/ProfileScreen'
+import CheckInScreen from './screens/CheckInScreen'
+import OverviewScreen from './screens/OverviewScreen'
+import AnalyzeScreen from './screens/AnalyzeScreen'
+import CustomTabBar from './components/CustomTabBar'
+import { TabView, SceneMap } from 'react-native-tab-view';
+import ProfileIcon from './components/ProfileIcon';
+import CheckInIcon from './components/CheckInIcon';
+import OverviewIcon from './components/OverviewIcon';
+import AnalyzeIcon from './components/AnalyzeIcon';
 
-export default function App() {
+const FirstRoute = () => (
+  <ProfileScreen />
+);
+
+const SecondRoute = () => (
+  <CheckInScreen />
+);
+
+const ThirdRoute = () => (
+  <OverviewScreen />
+);
+
+const FourthRoute = () => (
+  <AnalyzeScreen />
+);
+
+const renderScene = SceneMap({
+  first: FirstRoute,
+  second: SecondRoute,
+  third: ThirdRoute,
+  fourth: FourthRoute,
+});
+
+const App = () => {
+  const layout = useWindowDimensions();
+
+  const [index, setIndex] = React.useState(0);
+  const [routes] = React.useState([
+    { key: 'first', title: 'Profile', icon: ProfileIcon },
+    { key: 'second', title: 'Check In', icon: CheckInIcon },
+    { key: 'third', title: 'Overview', icon: OverviewIcon },
+    { key: 'fourth', title: 'Analyze', icon: AnalyzeIcon },
+  ]);
+  
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaView style={styles.safeAreaView}>
+      <TabView
+        navigationState={{ index, routes }}
+        renderScene={renderScene}
+        onIndexChange={setIndex}
+        initialLayout={{ width: layout.width }}
+        renderTabBar={props => <CustomTabBar {...props} />}
+      />
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+  safeAreaView: {
+      flex: 1,
   },
 });
+
+export default App;
