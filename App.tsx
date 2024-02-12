@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, SafeAreaView, Text, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, SafeAreaView, useWindowDimensions } from 'react-native';
 import ProfileScreen from './screens/ProfileScreen'
 import CheckInScreen from './screens/CheckInScreen'
 import OverviewScreen from './screens/OverviewScreen'
@@ -10,6 +10,7 @@ import ProfileIcon from './components/ProfileIcon';
 import CheckInIcon from './components/CheckInIcon';
 import OverviewIcon from './components/OverviewIcon';
 import AnalyzeIcon from './components/AnalyzeIcon';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const FirstRoute = () => (
   <ProfileScreen />
@@ -47,21 +48,29 @@ const App = () => {
   
 
   return (
-    <SafeAreaView style={styles.safeAreaView}>
-      <TabView
-        navigationState={{ index, routes }}
-        renderScene={renderScene}
-        onIndexChange={setIndex}
-        initialLayout={{ width: layout.width }}
-        renderTabBar={props => <CustomTabBar {...props} />}
-      />
-    </SafeAreaView>
+    <LinearGradient
+      colors={['#000000', '#000000', '#000000', '#000000', '#3A3A3A']}
+      style={{flex: 1}}
+      start={{x: 0, y: 0}}
+      end={{x: 0, y: 1}}
+    >
+      <SafeAreaView style={ styles.safeAreaView }>
+          <TabView
+            navigationState={{ index, routes }}
+            renderScene={renderScene}
+            onIndexChange={setIndex}
+            initialLayout={{ width: layout.width }}
+            renderTabBar={props => <CustomTabBar {...props} />}
+          />
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   safeAreaView: {
       flex: 1,
+      backgroundColor: 'transparent',
   },
 });
 

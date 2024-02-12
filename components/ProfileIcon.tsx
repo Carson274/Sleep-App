@@ -1,11 +1,16 @@
 import React from 'react';
 import { View } from 'react-native';
-import SVGImg from '../assets/icons/ProfileIcon.svg';
+import ProfileIconUnfocused from '../assets/icons/ProfileIcon.svg';
+import ProfileIconFocused from '../assets/icons/ProfileIconFocused.svg'; 
 
-const ProfileIcon = () => {
+const ProfileIcon = ({ focused }) => {
   return (
     <View>
-      <SVGImg width={40} height={40} />
+      {focused ? (
+        <ProfileIconFocused width={40} height={40} />
+      ) : (
+        <ProfileIconUnfocused width={40} height={40} />
+      )}
     </View>
   );
 };

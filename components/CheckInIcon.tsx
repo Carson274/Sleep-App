@@ -1,11 +1,16 @@
 import React from 'react';
 import { View } from 'react-native';
-import SVGImg from '../assets/icons/CheckInIcon.svg';
+import CheckInIconUnfocused from '../assets/icons/CheckInIcon.svg';
+import CheckInIconFocused from '../assets/icons/CheckInIconFocused.svg'; 
 
-const CheckInIcon = () => {
+const CheckInIcon = ({ focused }) => {
   return (
     <View>
-      <SVGImg width={40} height={40} />
+      {focused ? (
+        <CheckInIconFocused width={40} height={40} />
+      ) : (
+        <CheckInIconUnfocused width={40} height={40} />
+      )}
     </View>
   );
 };

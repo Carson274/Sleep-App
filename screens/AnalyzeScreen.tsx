@@ -4,7 +4,7 @@ import { StyleSheet, SafeAreaView, View, Text, Button } from 'react-native';
 const AnalyzeScreen = () => {
     return (
         <View style={styles.view}>
-            <Text>Analyze Screen</Text>
+            <Text style={styles.text}>Analyze Screen</Text>
         </View>
     );
 };
@@ -15,6 +15,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    text: {
+        color: 'white',
+        fontSize: 36,
+    }
 });
 
 export default AnalyzeScreen;

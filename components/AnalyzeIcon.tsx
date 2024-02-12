@@ -1,11 +1,16 @@
 import React from 'react';
 import { View } from 'react-native';
-import SVGImg from '../assets/icons/AnalyzeIcon.svg';
+import AnalyzeIconUnfocused from '../assets/icons/AnalyzeIcon.svg';
+import AnalyzeIconFocused from '../assets/icons/AnalyzeIconFocused.svg'; 
 
-const AnalyzeIcon = () => {
+const AnalyzeIcon = ({ focused }) => {
   return (
     <View>
-      <SVGImg width={40} height={40} />
+      {focused ? (
+        <AnalyzeIconFocused width={40} height={40} />
+      ) : (
+        <AnalyzeIconUnfocused width={40} height={40} />
+      )}
     </View>
   );
 };

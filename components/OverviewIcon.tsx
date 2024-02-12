@@ -1,11 +1,16 @@
 import React from 'react';
 import { View } from 'react-native';
-import SVGImg from '../assets/icons/OverviewIcon.svg';
+import OverviewIconUnfocused from '../assets/icons/OverviewIcon.svg';
+import OverviewIconFocused from '../assets/icons/OverviewIconFocused.svg'; 
 
-const OverviewIcon = () => {
+const OverviewIcon = ({ focused }) => {
   return (
     <View>
-      <SVGImg width={40} height={40} />
+      {focused ? (
+        <OverviewIconFocused width={40} height={40} />
+      ) : (
+        <OverviewIconUnfocused width={40} height={40} />
+      )}
     </View>
   );
 };

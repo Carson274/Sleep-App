@@ -4,7 +4,7 @@ import { StyleSheet, SafeAreaView, View, Text, Button } from 'react-native';
 const OverviewScreen = () => {
     return (
         <View style={styles.view}>
-            <Text>Overview Screen</Text>
+            <Text style={styles.text}>Overview Screen</Text>
         </View>
     );
 };
@@ -15,6 +15,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    text: {
+        color: 'white',
+        fontSize: 36,
+    }
 });
 
 export default OverviewScreen;
