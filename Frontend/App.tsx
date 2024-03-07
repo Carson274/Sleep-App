@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, SafeAreaView, useWindowDimensions } from 'react-native';
+import { StyleSheet, SafeAreaView, useWindowDimensions, AppRegistry } from 'react-native';
 import ProfileScreen from './screens/ProfileScreen'
 import CheckInScreen from './screens/CheckInScreen'
 import OverviewScreen from './screens/OverviewScreen'
@@ -11,6 +11,8 @@ import CheckInIcon from './components/CheckInIcon';
 import OverviewIcon from './components/OverviewIcon';
 import AnalyzeIcon from './components/AnalyzeIcon';
 import { LinearGradient } from 'expo-linear-gradient';
+import { PaperProvider } from 'react-native-paper';
+import AuthScreen from './screens/AuthScreen';
 
 const FirstRoute = () => (
   <ProfileScreen />
@@ -37,8 +39,10 @@ const renderScene = SceneMap({
 
 const App = () => {
   const layout = useWindowDimensions();
-
+  const [isSignedIn, setIsSignedIn] = React.useState(false);
   const [index, setIndex] = React.useState(0);
+
+  // the routes for the tab view
   const [routes] = React.useState([
     { key: 'first', title: 'Profile', icon: ProfileIcon },
     { key: 'second', title: 'Check In', icon: CheckInIcon },
@@ -48,22 +52,26 @@ const App = () => {
   
 
   return (
-    <LinearGradient
-      colors={['#131313', '#131313', '#131313', '#131313', '#131313', '#131313', '#2C2D57']}
-      style={{flex: 1}}
-      start={{x: 0, y: 0}}
-      end={{x: 0, y: 1}}
-    >
-      <SafeAreaView style={ styles.safeAreaView }>
-          <TabView
-            navigationState={{ index, routes }}
-            renderScene={renderScene}
-            onIndexChange={setIndex}
-            initialLayout={{ width: layout.width }}
-            renderTabBar={props => <CustomTabBar {...props} />}
-          />
-      </SafeAreaView>
-    </LinearGradient>
+    <PaperProvider>
+      <LinearGradient
+        colors={['#131313', '#131313', '#131313', '#131313', '#131313', '#131313', '#2C2D57']}
+        style={{flex: 1}}
+        start={{x: 0, y: 0}}
+        end={{x: 0, y: 1}}
+      >
+      {isSignedIn ?
+          <SafeAreaView style={ styles.safeAreaView }>
+              <TabView
+                navigationState={{ index, routes }}
+                renderScene={renderScene}
+                onIndexChange={setIndex}
+                initialLayout={{ width: layout.width }}
+                renderTabBar={props => <CustomTabBar {...props} />}
+              />
+          </SafeAreaView>
+      : <AuthScreen />}
+      </LinearGradient>
+    </PaperProvider>
   );
 };
 
