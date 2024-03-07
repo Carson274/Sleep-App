@@ -20,6 +20,7 @@ const CustomTabBar = (props) => {
       {...props}
       renderIcon={renderIcon}
       renderLabel={renderLabel}
+      indicatorStyle={{ backgroundColor: '#666CFF', height: 1 }}
     />
   );
 };
