@@ -5,18 +5,20 @@ import (
 	"fmt"
 	"encoding/json"
 
-	// "context"
-	// "log"
-	// "os"
-	// "time"
-	// "github.com/joho/godotenv"
-	// "go.mongodb.org/mongo-driver/bson"
+	"context"
+	"log"
+	"os"
+	"time"
+	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	// "go.mongodb.org/mongo-driver/mongo"
-	// "go.mongodb.org/mongo-driver/mongo/options"
-	// "go.mongodb.org/mongo-driver/mongo/readpref"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var client *mongo.Client
 
 // User represents a user in the system
 type User struct {
@@ -42,6 +44,36 @@ func HashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
+func connectToDB() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	// get the environment variable for the connection string
+	connectString := os.Getenv("MONGODB_CONNECT_STRING")
+
+	// if the environment variable is not set, then exit the program
+	if connectString == "" {
+		log.Fatal("MONGODB_CONNECT_STRING environment variable not set")
+	}
+
+	// create a new client (user in our case)
+	client, err = mongo.NewClient(options.Client().ApplyURI(connectString))
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := client.Ping(ctx, readpref.Primary()); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Successfully connected and pinged MongoDB!")
+}
+
 // CheckPasswordHash checks if a password is the hash of the given password
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
@@ -55,15 +87,19 @@ func UsernameAvailable(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	response := map[string]int{"result": 0} //Default response is no username available, updates to 1 if username is available
 
-	//Check is username is already in MongoDB 
-	
+	//Check is username is already in MongoDB
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := client.Database("users_db").Collection("users")
+	filter := bson.M{"username": username}
+	var result User
 
-	if username == "" {
-		http.Error(w, "No username provided", http.StatusBadRequest)
-		return
-	} else if username == "test1" { //TODO: Implement logic to check if username is available here
+	err := collection.FindOne(ctx, filter).Decode(&result)
+
+	if err == mongo.ErrNoDocuments {
+		fmt.Println(err)
         response["result"] = 1
-	} 
+	}
 		
 	// Send the response
 	if err := json.NewEncoder(w).Encode(response); err != nil {
@@ -72,6 +108,13 @@ func UsernameAvailable(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
+	connectToDB()
+
+	if client == nil {
+		fmt.Println("Client is nil")
+		return
+	}
 
 	http.HandleFunc("/validUsername", UsernameAvailable)
 
