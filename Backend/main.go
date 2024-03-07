@@ -1,12 +1,14 @@
 package main
 
 import (
-	"context"
+	"net/http"
 	"fmt"
+	"encoding/json"
+
+	"context"
 	"log"
 	"os"
 	"time"
-
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -16,6 +18,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var client *mongo.Client
+
 // User represents a user in the system
 type User struct {
 	Id         primitive.ObjectID `bson:"_id,omitempty"` // use omitempty to ignore the field if it is empty
@@ -24,6 +28,7 @@ type User struct {
 	Password   string             `bson:"password"`
 	NumFriends int                `bson:"numFriends"`
 	Friends    []string           `bson:"friends"` // list of friend usernames
+	FriendRequests []string       `bson:"friendRequests"` // list of friend requests
 	SleepStats []SleepStatistic   `bson:"sleepStats"`
 }
 
@@ -39,14 +44,7 @@ func HashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-// CheckPasswordHash checks if a password is the hash of the given password
-func CheckPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-
-func main() {
-	// load environment variables
+func connectToDB() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -61,7 +59,7 @@ func main() {
 	}
 
 	// create a new client (user in our case)
-	client, err := mongo.NewClient(options.Client().ApplyURI(connectString))
+	client, err = mongo.NewClient(options.Client().ApplyURI(connectString))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -70,65 +68,61 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer client.Disconnect(ctx)
-
 	if err := client.Ping(ctx, readpref.Primary()); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("Successfully connected and pinged MongoDB!")
+}
 
-	databases, err := client.ListDatabaseNames(ctx, bson.M{})
-	if err != nil {
-		log.Fatal(err)
+// CheckPasswordHash checks if a password is the hash of the given password
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+
+func UsernameAvailable(w http.ResponseWriter, r *http.Request) {
+	// Get the username from the request
+	username := r.URL.Query().Get("username")
+
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]int{"result": 0} //Default response is no username available, updates to 1 if username is available
+
+	//Check is username is already in MongoDB
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := client.Database("users_db").Collection("users")
+	filter := bson.M{"username": username}
+	var result User
+
+	err := collection.FindOne(ctx, filter).Decode(&result)
+
+	if err == mongo.ErrNoDocuments {
+		fmt.Println(err)
+        response["result"] = 1
 	}
-	fmt.Println(databases)
+		
+	// Send the response
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
 
-	// get the users collection
-	coll := client.Database("users_db").Collection("users")
-	docs := []interface{}{
-		User{
-			Name:       "Carson",
-			Username:   "carpet",
-			NumFriends: 3,
-			Friends:    []string{"jinnypooh", "sebas", "rist"},
-			SleepStats: []SleepStatistic{
-				{
-					Date:       primitive.NewDateTimeFromTime(time.Now()),
-					HoursSlept: 8.5,
-				},
-			},
-		},
-		User{
-			Name:       "Sebastian",
-			Username:   "sebas",
-			NumFriends: 2,
-			Friends:    []string{"carpet", "jinnypooh"},
-			SleepStats: []SleepStatistic{
-				{
-					Date:       primitive.NewDateTimeFromTime(time.Now()),
-					HoursSlept: 7.5,
-				},
-			},
-		},
-		User{
-			Name:       "Jinny",
-			Username:   "jinnypooh",
-			NumFriends: 2,
-			Friends:    []string{"carpet", "sebas"},
-			SleepStats: []SleepStatistic{
-				{
-					Date:       primitive.NewDateTimeFromTime(time.Now()),
-					HoursSlept: 6.5,
-				},
-			},
-		},
+func main() {
+
+	connectToDB()
+
+	if client == nil {
+		fmt.Println("Client is nil")
+		return
 	}
 
-	// insert the documents into the collection
-	result, err := coll.InsertMany(context.TODO(), docs)
+	http.HandleFunc("/validUsername", UsernameAvailable)
 
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("Inserted %d documents into collection\n", len(result.InsertedIDs))
+    // Start the HTTP server on port 8080 and log any errors
+    fmt.Println("Server is running on port 8080")
+    err := http.ListenAndServe(":8080", nil)
+    if err != nil {
+        fmt.Println("Error starting server: ", err)
+    }
+
 }
