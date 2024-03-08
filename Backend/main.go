@@ -23,7 +23,6 @@ var client *mongo.Client
 // User represents a user in the system
 type User struct {
 	Id         primitive.ObjectID `bson:"_id,omitempty"` // use omitempty to ignore the field if it is empty
-	Name       string             `bson:"name"`
 	Username   string             `bson:"username"`
 	Password   string             `bson:"password"`
 	NumFriends int                `bson:"numFriends"`
@@ -85,7 +84,7 @@ func UsernameAvailable(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 
 	w.Header().Set("Content-Type", "application/json")
-	response := map[string]int{"result": 0} //Default response is no username available, updates to 1 if username is available
+	response := map[string]int{"result": 0} // Default response is no username available, updates to 1 if username is available
 
 	//Check is username is already in MongoDB
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -107,6 +106,87 @@ func UsernameAvailable(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func CreateAccount(w http.ResponseWriter, r *http.Request) {
+	// Get the username and password from the request
+	username := r.URL.Query().Get("username")
+	password := r.URL.Query().Get("password")
+
+	// Hash the password
+	hash, err := HashPassword(password)
+	if err != nil {
+		fmt.Println("Error hashing password: ", err)
+		http.Error(w, "Error hashing password", http.StatusInternalServerError)
+		return
+	}
+
+	// Create a new user
+	newUser := User{
+		Username: username,
+		Password: hash,
+		NumFriends: 0,
+		Friends: []string{},
+		FriendRequests: []string{},
+		SleepStats: []SleepStatistic{},
+	}
+
+	// Insert the new user into the database
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := client.Database("users_db").Collection("users")
+	_, err = collection.InsertOne(ctx, newUser)
+	if err != nil {
+		fmt.Println("Error inserting user: ", err)
+		http.Error(w, "Error inserting user", http.StatusInternalServerError)
+		return
+	}
+
+	// Send the response
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]string{"result": "success"}
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func AuthenticateUser(w http.ResponseWriter, r *http.Request) {
+	// Get the username and password from the request
+	username := r.URL.Query().Get("username")
+	password := r.URL.Query().Get("password")
+
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]int{"result": 0} // Default response is failure
+
+	// Get the user from the database
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := client.Database("users_db").Collection("users")
+	filter := bson.M{"username": username}
+	var result User
+
+	err := collection.FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		fmt.Println("Error finding user: ", err)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// Check if the password is correct
+	if CheckPasswordHash(password, result.Password) {
+		fmt.Println("User authenticated successfully")
+		response["result"] = 1
+	} else {
+		fmt.Println("Incorrect password")
+	}
+
+	// Send the response indicating success or failure
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+
 func main() {
 
 	connectToDB()
@@ -117,6 +197,10 @@ func main() {
 	}
 
 	http.HandleFunc("/validUsername", UsernameAvailable)
+
+	http.HandleFunc("/signup", CreateAccount)
+
+	http.HandleFunc("/authenticate", AuthenticateUser)
 
     // Start the HTTP server on port 8080 and log any errors
     fmt.Println("Server is running on port 8080")
