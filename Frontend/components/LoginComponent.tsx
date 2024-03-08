@@ -26,10 +26,7 @@ const LoginComponent = ({ setIsSignedIn, toggleScreen }) => {
   const Login = async () => {
     const authResponse = await Authenticate();
     if (authResponse.result === 1) {
-      const token = await SecureStore.getItemAsync('token');
-      if (token) {
-        setIsSignedIn(true);
-      }
+      setIsSignedIn(true);
     } else {
       alert('Username or password is incorrect');
       setUsername("");

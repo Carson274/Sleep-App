@@ -1,10 +1,10 @@
 import React from 'react';
 import { StyleSheet, SafeAreaView, View, Text, Button } from 'react-native';
 
-const ProfileScreen = () => {
+const CompeteScreen = () => {
     return (
         <View style={styles.view}>
-            <Text style={styles.text}>Profile Screen</Text>
+            <Text style={styles.text}>Compete Screen</Text>
         </View>
     );
 };
@@ -21,4 +21,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default ProfileScreen;
+export default CompeteScreen;
