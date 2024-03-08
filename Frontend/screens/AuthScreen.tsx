@@ -5,7 +5,7 @@ import LoginComponent from '../components/LoginComponent';
 import Logo from '../assets/sleep_svg.svg';
 import { Button } from 'react-native-paper';
 
-const AuthScreen = () => {
+const AuthScreen = ({ setIsSignedIn }) => {
   const [loginOption, setLoginOption] = React.useState("");
 
   function toggleScreen(option) {
@@ -15,9 +15,9 @@ const AuthScreen = () => {
   return (
     <SafeAreaView style={styles.safeAreaView}>
       {loginOption === 'signup' ? (
-        <SignUpComponent toggleScreen={() => toggleScreen('login')}/>
+        <SignUpComponent setIsSignedIn={setIsSignedIn} toggleScreen={() => toggleScreen('login')}/>
       ) : loginOption === 'login' ? (
-        <LoginComponent toggleScreen={() => toggleScreen('signup')}/>
+        <LoginComponent setIsSignedIn={setIsSignedIn} toggleScreen={() => toggleScreen('signup')}/>
       ) : (
         <>
           <View style={styles.logoContainer}>

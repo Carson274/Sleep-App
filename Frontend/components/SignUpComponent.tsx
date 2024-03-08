@@ -3,9 +3,43 @@ import { View, Text, StyleSheet } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import Logo from '../assets/sleep_svg.svg';
 
-const SignUpComponent = ({ toggleScreen }) => {
-  const [userName, setUserName] = React.useState("");
+const SignUpComponent = ({ setIsSignedIn, toggleScreen }) => {
+  const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [isAvailable, setIsAvailable] = React.useState(false);
+
+  const checkAvailability = async () => {
+    // if the username fetch returns 1, then the username is available
+    const response = await fetch(`http://localhost:8080/validUsername?username=${username}`)
+      .then(response => response.json())
+    return response;
+  }
+
+  const SignUp = async () => {
+    // set isAvailable
+    setIsAvailable(await checkAvailability());
+    if (isAvailable) {
+      // if the username is available, then create the user
+      const response = await fetch(`http://localhost:8080/signup?username=${username}&password=${password}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: username, password: password }),
+      })
+        .then(response => response.json())
+      if (response) {
+        setIsSignedIn(true);
+      }
+    } else {
+      // if the username is not available, then alert the user
+      alert('Username is not available');
+      
+      // clear the username and password fields
+      setUsername("");
+      setPassword("");
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -19,11 +53,14 @@ const SignUpComponent = ({ toggleScreen }) => {
         <TextInput
           style={ styles.textInput }
           label="Username"
-          value={userName}
+          value={username}
           mode="outlined"
-          onChangeText={text => setUserName(text)}
+          onChangeText={text => setUsername(text)}
           outlineColor='white'
-          activeOutlineColor='white'
+          activeOutlineColor='#206BB6'
+          selectionColor='#206BB6'
+          textColor='white'
+          autoCapitalize="none"
         />
         <TextInput
           style={ styles.textInput }
@@ -32,14 +69,18 @@ const SignUpComponent = ({ toggleScreen }) => {
           mode="outlined"
           onChangeText={text => setPassword(text)}
           outlineColor='white'
-          activeOutlineColor='white'
+          activeOutlineColor='#206BB6'
+          selectionColor='#206BB6'
+          textColor='white'
+          autoCapitalize="none"
+          secureTextEntry={true}
         />
         <Button 
           style={styles.button} 
           mode="contained" 
           contentStyle={styles.buttonContent} 
           labelStyle={styles.buttonLabel} 
-          onPress={console.log('Create account')}
+          onPress={() => SignUp()}
         >
         CREATE
         </Button>
@@ -87,6 +128,7 @@ const styles = StyleSheet.create({
     width: '80%',
     backgroundColor: '#131313',
     marginBottom: 20,
+    color: 'white',
   },
   text: {
     color: 'white',

@@ -2,10 +2,40 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import Logo from '../assets/sleep_svg.svg';
+import * as SecureStore from 'expo-secure-store';
 
-const LoginComponent = ({ toggleScreen }) => {
-  const [userName, setUserName] = React.useState("");
+const LoginComponent = ({ setIsSignedIn, toggleScreen }) => {
+  const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
+
+  const Authenticate = async () => {
+    const response = await fetch(`http://localhost:8080/authenticate?username=${username}&password=${password}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    })
+      .then(response => response.json())
+    return response;
+  }
+
+  const Login = async () => {
+    const authResponse = await Authenticate();
+    if (authResponse.result === 1) {
+      const token = await SecureStore.getItemAsync('token');
+      if (token) {
+        setIsSignedIn(true);
+      }
+    } else {
+      alert('Username or password is incorrect');
+      setUsername("");
+      setPassword("");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -20,11 +50,14 @@ const LoginComponent = ({ toggleScreen }) => {
         <TextInput
           style={ styles.textInput }
           label="Username"
-          value={userName}
+          value={username}
           mode="outlined"
-          onChangeText={text => setUserName(text)}
+          onChangeText={text => setUsername(text)}
           outlineColor='white'
-          activeOutlineColor='white'
+          activeOutlineColor='#206BB6'
+          selectionColor='#206BB6'
+          textColor='white'
+          autoCapitalize="none"
         />
         <TextInput
           style={ styles.textInput }
@@ -33,14 +66,18 @@ const LoginComponent = ({ toggleScreen }) => {
           mode="outlined"
           onChangeText={text => setPassword(text)}
           outlineColor='white'
-          activeOutlineColor='white'
+          activeOutlineColor='#206BB6'
+          selectionColor='#206BB6'
+          textColor='white'
+          autoCapitalize="none"
+          secureTextEntry={true}
         />
         <Button 
           style={styles.button} 
           mode="contained" 
           contentStyle={styles.buttonContent} 
           labelStyle={styles.buttonLabel} 
-          onPress={console.log('Create account')}
+          onPress={() => Login()}
         >
         LOGIN
         </Button>

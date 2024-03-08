@@ -13,6 +13,8 @@ import AnalyzeIcon from './components/AnalyzeIcon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { PaperProvider } from 'react-native-paper';
 import AuthScreen from './screens/AuthScreen';
+import SplashScreen from './screens/SplashScreen';
+import * as SecureStore from 'expo-secure-store';
 
 const FirstRoute = () => (
   <ProfileScreen />
@@ -37,9 +39,12 @@ const renderScene = SceneMap({
   fourth: FourthRoute,
 });
 
+// this is the main app component
 const App = () => {
   const layout = useWindowDimensions();
   const [isSignedIn, setIsSignedIn] = React.useState(false);
+  const [isSignOut, setIsSignOut] = React.useState(false);
+  const [userToken, setUserToken] = React.useState(null);
   const [index, setIndex] = React.useState(0);
 
   // the routes for the tab view
@@ -50,6 +55,19 @@ const App = () => {
     { key: 'fourth', title: 'Analyze', icon: AnalyzeIcon },
   ]);
   
+  // loading screen while we look for the user's token
+  if (isSignedIn === null) {
+    return (
+      <LinearGradient
+        colors={['#131313', '#131313', '#131313', '#131313', '#131313', '#131313', '#2C2D57']}
+        style={{flex: 1}}
+        start={{x: 0, y: 0}}
+        end={{x: 0, y: 1}}
+      >
+        <SplashScreen />
+      </LinearGradient>
+    );
+  }
 
   return (
     <PaperProvider>
@@ -69,7 +87,7 @@ const App = () => {
                 renderTabBar={props => <CustomTabBar {...props} />}
               />
           </SafeAreaView>
-      : <AuthScreen />}
+      : <AuthScreen setIsSignedIn={setIsSignedIn}/>}
       </LinearGradient>
     </PaperProvider>
   );
