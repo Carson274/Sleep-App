@@ -3,8 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import Logo from '../assets/sleep_svg.svg';
 
-const SignUpComponent = ({ setIsSignedIn, toggleScreen }) => {
-  const [username, setUsername] = React.useState("");
+const SignUpComponent = ({ username, setUsername, setIsSignedIn, toggleScreen }) => {
   const [password, setPassword] = React.useState("");
   const [isAvailable, setIsAvailable] = React.useState(false);
 

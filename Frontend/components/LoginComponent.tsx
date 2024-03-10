@@ -4,8 +4,7 @@ import { TextInput, Button } from 'react-native-paper';
 import Logo from '../assets/sleep_svg.svg';
 import * as SecureStore from 'expo-secure-store';
 
-const LoginComponent = ({ setIsSignedIn, toggleScreen }) => {
-  const [username, setUsername] = React.useState("");
+const LoginComponent = ({ username, setUsername, setIsSignedIn, toggleScreen }) => {
   const [password, setPassword] = React.useState("");
 
   const Authenticate = async () => {

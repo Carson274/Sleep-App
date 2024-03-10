@@ -14,47 +14,39 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { PaperProvider } from 'react-native-paper';
 import AuthScreen from './screens/AuthScreen';
 import SplashScreen from './screens/SplashScreen';
-import * as SecureStore from 'expo-secure-store';
 import TopBar from './components/TopBar';
-
-const FirstRoute = () => (
-  <FriendsScreen />
-);
-
-const SecondRoute = () => (
-  <CheckInScreen />
-);
-
-const ThirdRoute = () => (
-  <OverviewScreen />
-);
-
-const FourthRoute = () => (
-  <CompeteScreen />
-);
-
-const renderScene = SceneMap({
-  first: FirstRoute,
-  second: SecondRoute,
-  third: ThirdRoute,
-  fourth: FourthRoute,
-});
 
 // this is the main app component
 const App = () => {
   const layout = useWindowDimensions();
-  const [isSignedIn, setIsSignedIn] = React.useState(true);
+  const [isSignedIn, setIsSignedIn] = React.useState(false);
   const [isSignOut, setIsSignOut] = React.useState(false);
   const [userToken, setUserToken] = React.useState(null);
   const [index, setIndex] = React.useState(0);
+  const [username, setUsername] = React.useState(null);
 
   // the routes for the tab view
   const [routes] = React.useState([
     { key: 'first', title: 'Friends', icon: FriendsIcon },
-    { key: 'second', title: 'Check In', icon: CheckInIcon },
+    { key: 'second', title: 'Check In', icon: CheckInIcon, },
     { key: 'third', title: 'Overview', icon: OverviewIcon },
     { key: 'fourth', title: 'Compete', icon: AnalyzeIcon },
   ]);
+
+  const renderScene = ({ route }) => {
+    switch (route.key) {
+      case 'first':
+        return <FriendsScreen />;
+      case 'second':
+        return <CheckInScreen username={username} />;
+      case 'third':
+        return <OverviewScreen />;
+      case 'fourth':
+        return <CompeteScreen />;
+      default:
+        return null;
+    }
+  };
   
   // loading screen while we look for the user's token
   if (isSignedIn === null) {
@@ -89,7 +81,7 @@ const App = () => {
               renderTabBar={props => <CustomTabBar {...props} />}
             />
           </SafeAreaView>
-      : <AuthScreen setIsSignedIn={setIsSignedIn}/>}
+      : <AuthScreen username={username} setUsername={setUsername} setIsSignedIn={setIsSignedIn}/>}
       </LinearGradient>
     </PaperProvider>
   );
