@@ -33,7 +33,7 @@ type User struct {
 
 // SleepStatistic represents a user's sleep data for a single night
 type SleepStatistic struct {
-	Date       primitive.DateTime `bson:"date"`       // use the MongoDB datetime format for ease of querying
+	Date       string 						`bson:"date"`       // use the MongoDB datetime format for ease of querying
 	HoursSlept float64            `bson:"hoursSlept"` // number of hours slept, allows for partial hours
 }
 
@@ -186,6 +186,60 @@ func AuthenticateUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func TrackSleep(w http.ResponseWriter, r *http.Request) {
+	// Define a struct that matches the expected JSON body
+	type request struct {
+			Username   string  `json:"username"`
+			Sleep      float64 `json:"sleep"`
+			Date       string  `json:"date"` // Expecting date as "YYYY-MM-DD"
+	}
+
+	// Parse the JSON body into the struct
+	var reqData request
+	err := json.NewDecoder(r.Body).Decode(&reqData)
+	if err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+	}
+
+	// Create the SleepStatistic object with the date as a string
+	sleepData := SleepStatistic{
+		Date:       reqData.Date, // Already in "YYYY-MM-DD" format
+		HoursSlept: reqData.Sleep,
+	}
+
+	// Connect to MongoDB and update the user's sleep stats
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := client.Database("users_db").Collection("users")
+
+	// Update operation
+	filter := bson.M{"username": reqData.Username}
+	update := bson.M{"$push": bson.M{"sleepStats": sleepData}}
+	result, err := collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+			log.Printf("Error updating user sleep data: %v\n", err)
+			http.Error(w, "Error updating sleep data", http.StatusInternalServerError)
+			return
+	}
+
+	if result.MatchedCount == 0 {
+			http.Error(w, "User not found", http.StatusNotFound)
+			return
+	} else if result.ModifiedCount == 0 {
+			http.Error(w, "Sleep data not added", http.StatusInternalServerError)
+			return
+	}
+
+	// Send success response
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]string{"result": "success"}
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+
 
 func main() {
 
@@ -201,6 +255,8 @@ func main() {
 	http.HandleFunc("/signup", CreateAccount)
 
 	http.HandleFunc("/authenticate", AuthenticateUser)
+
+	http.HandleFunc("/trackSleep", TrackSleep)
 
     // Start the HTTP server on port 8080 and log any errors
     fmt.Println("Server is running on port 8080")
