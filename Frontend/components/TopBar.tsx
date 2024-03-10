@@ -29,7 +29,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   container: {
-    position: 'absolute',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

@@ -22,8 +22,10 @@ const App = () => {
   const [isSignedIn, setIsSignedIn] = React.useState(false);
   const [isSignOut, setIsSignOut] = React.useState(false);
   const [userToken, setUserToken] = React.useState(null);
-  const [index, setIndex] = React.useState(0);
   const [username, setUsername] = React.useState(null);
+
+  // set the default page to be the check in screen
+  const [index, setIndex] = React.useState(1);
 
   // the routes for the tab view
   const [routes] = React.useState([
@@ -40,7 +42,7 @@ const App = () => {
       case 'second':
         return <CheckInScreen username={username} />;
       case 'third':
-        return <OverviewScreen />;
+        return <OverviewScreen username={username} />;
       case 'fourth':
         return <CompeteScreen />;
       default:
