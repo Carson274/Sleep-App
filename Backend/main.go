@@ -1,14 +1,12 @@
 package main
 
 import (
-	"net/http"
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"net/http"
+	"strings"
 
 	"context"
-	"log"
-	"os"
-	"time"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -16,25 +14,28 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"golang.org/x/crypto/bcrypt"
+	"log"
+	"os"
+	"time"
 )
 
 var client *mongo.Client
 
 // User represents a user in the system
 type User struct {
-	Id         primitive.ObjectID `bson:"_id,omitempty"` // use omitempty to ignore the field if it is empty
-	Username   string             `bson:"username"`
-	Password   string             `bson:"password"`
-	NumFriends int                `bson:"numFriends"`
-	Friends    []string           `bson:"friends"` // list of friend usernames
-	FriendRequests []string       `bson:"friendRequests"` // list of friend requests
-	SleepStats []SleepStatistic   `bson:"sleepStats"`
+	Id             primitive.ObjectID `bson:"_id,omitempty"` // use omitempty to ignore the field if it is empty
+	Username       string             `bson:"username"`
+	Password       string             `bson:"password"`
+	NumFriends     int                `bson:"numFriends"`
+	Friends        []string           `bson:"friends"`        // list of friend usernames
+	FriendRequests []string           `bson:"friendRequests"` // list of friend requests
+	SleepStats     []SleepStatistic   `bson:"sleepStats"`
 }
 
 // SleepStatistic represents a user's sleep data for a single night
 type SleepStatistic struct {
-	Date       string 						`bson:"date"`       // use the MongoDB datetime format for ease of querying
-	HoursSlept float64            `bson:"hoursSlept"` // number of hours slept, allows for partial hours
+	Date       string  `bson:"date"`       // use the MongoDB datetime format for ease of querying
+	HoursSlept float64 `bson:"hoursSlept"` // number of hours slept, allows for partial hours
 }
 
 // HashPassword hashes a password using bcrypt
@@ -97,9 +98,9 @@ func UsernameAvailable(w http.ResponseWriter, r *http.Request) {
 
 	if err == mongo.ErrNoDocuments {
 		fmt.Println(err)
-        response["result"] = 1
+		response["result"] = 1
 	}
-		
+
 	// Send the response
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -121,12 +122,12 @@ func CreateAccount(w http.ResponseWriter, r *http.Request) {
 
 	// Create a new user
 	newUser := User{
-		Username: username,
-		Password: hash,
-		NumFriends: 0,
-		Friends: []string{},
+		Username:       username,
+		Password:       hash,
+		NumFriends:     0,
+		Friends:        []string{},
 		FriendRequests: []string{},
-		SleepStats: []SleepStatistic{},
+		SleepStats:     []SleepStatistic{},
 	}
 
 	// Insert the new user into the database
@@ -189,17 +190,17 @@ func AuthenticateUser(w http.ResponseWriter, r *http.Request) {
 func TrackSleep(w http.ResponseWriter, r *http.Request) {
 	// Define a struct that matches the expected JSON body
 	type request struct {
-			Username   string  `json:"username"`
-			Sleep      float64 `json:"sleep"`
-			Date       string  `json:"date"` // Expecting date as "YYYY-MM-DD"
+		Username string  `json:"username"`
+		Sleep    float64 `json:"sleep"`
+		Date     string  `json:"date"` // Expecting date as "YYYY-MM-DD"
 	}
 
 	// Parse the JSON body into the struct
 	var reqData request
 	err := json.NewDecoder(r.Body).Decode(&reqData)
 	if err != nil {
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
-			return
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
 	}
 
 	// Create the SleepStatistic object with the date as a string
@@ -218,29 +219,32 @@ func TrackSleep(w http.ResponseWriter, r *http.Request) {
 	update := bson.M{"$push": bson.M{"sleepStats": sleepData}}
 	result, err := collection.UpdateOne(ctx, filter, update)
 	if err != nil {
-			log.Printf("Error updating user sleep data: %v\n", err)
-			http.Error(w, "Error updating sleep data", http.StatusInternalServerError)
-			return
+		log.Printf("Error updating user sleep data: %v\n", err)
+		http.Error(w, "Error updating sleep data", http.StatusInternalServerError)
+		return
 	}
 
 	if result.MatchedCount == 0 {
-			http.Error(w, "User not found", http.StatusNotFound)
-			return
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
 	} else if result.ModifiedCount == 0 {
-			http.Error(w, "Sleep data not added", http.StatusInternalServerError)
-			return
+		http.Error(w, "Sleep data not added", http.StatusInternalServerError)
+		return
 	}
+
+	// Print success message
+	fmt.Println("Sleep data added successfully")
 
 	// Send success response
 	w.Header().Set("Content-Type", "application/json")
 	response := map[string]string{"result": "success"}
 	if err := json.NewEncoder(w).Encode(response); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
-func GetSleepData(w http.ResponseWriter, r *http.Request){
-	
+func GetSleepData(w http.ResponseWriter, r *http.Request) {
+
 	// Get the username from the request
 	username := r.URL.Query().Get("username")
 
@@ -259,11 +263,61 @@ func GetSleepData(w http.ResponseWriter, r *http.Request){
 	}
 
 	// Log the sleep stats
-	fmt.Println("Sleep stats for user", username, ":", result.SleepStats)
+	// fmt.Println("Sleep stats for user", username, ":", result.SleepStats)
+	fmt.Println("Sleep stats retrieved successfully")
 
 	// Send the response
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(result.SleepStats); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func GetUsers(w http.ResponseWriter, r *http.Request) {
+
+	// Connect to MongoDB and get the user's sleep stats
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := client.Database("users_db").Collection("users")
+	cursor, err := collection.Find(ctx, bson.M{})
+	if err != nil {
+		log.Printf("Error finding users: %v\n", err)
+		http.Error(w, "Error finding users", http.StatusInternalServerError)
+		return
+	}
+
+	// Log the sleep stats
+	// fmt.Println("Sleep stats for user", username, ":", result.SleepStats)
+	fmt.Println("Users retrieved successfully")
+
+	// Sift through the users and only send the usernames which include the searchQuery
+	searchQuery := r.URL.Query().Get("searchQuery")
+	username := r.URL.Query().Get("username")
+
+	var users []string
+	for cursor.Next(ctx) {
+		var user User
+		err := cursor.Decode(&user)
+		if err != nil {
+			log.Printf("Error decoding user: %v\n", err)
+			http.Error(w, "Error decoding user", http.StatusInternalServerError)
+			return
+		}
+
+		isContains := strings.Contains(user.Username, searchQuery)
+
+		// If the searchQuery is in the username, add it to the list of users
+		if (isContains) && (user.Username != username){
+			users = append(users, user.Username)
+		}
+	}
+
+	// Print the users, for debugging
+	fmt.Println("Users:", users)
+
+	// Send the response
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(users); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -287,11 +341,13 @@ func main() {
 
 	http.HandleFunc("/getSleepData", GetSleepData)
 
-    // Start the HTTP server on port 8080 and log any errors
-    fmt.Println("Server is running on port 8080")
-    err := http.ListenAndServe(":8080", nil)
-    if err != nil {
-        fmt.Println("Error starting server: ", err)
-    }
+	http.HandleFunc("/getUsers", GetUsers)
+
+	// Start the HTTP server on port 8080 and log any errors
+	fmt.Println("Server is running on port 8080")
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		fmt.Println("Error starting server: ", err)
+	}
 
 }
