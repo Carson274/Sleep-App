@@ -358,6 +358,45 @@ func CheckIfFriends(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func AddFriend(w http.ResponseWriter, r *http.Request) {
+	// Get the user's username and the friend's username from the request
+	username := r.URL.Query().Get("username")
+	friendUsername := r.URL.Query().Get("friendUsername")
+
+	// Connect to MongoDB and update the user's friends list
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := client.Database("users_db").Collection("users")
+
+	// Find the user and push the new friend username onto the list of friends
+	filter := bson.M{"username": username}
+	update := bson.M{"$push": bson.M{"friends": friendUsername}}
+	result, err := collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		log.Printf("Error updating user friends list: %v\n", err)
+		http.Error(w, "Error updating friends list", http.StatusInternalServerError)
+		return
+	}
+
+	if result.MatchedCount == 0 {
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	} else if result.ModifiedCount == 0 {
+		http.Error(w, "Friend not added", http.StatusInternalServerError)
+		return
+	}
+
+	// Print success message
+	fmt.Println("Friend added successfully")
+
+	// Send the response
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]string{"result": "success"}
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func main() {
 
 	connectToDB()
@@ -380,6 +419,8 @@ func main() {
 	http.HandleFunc("/getUsers", GetUsers)
 
 	http.HandleFunc("/checkIfFriends", CheckIfFriends)
+
+	http.HandleFunc("/addFriend", AddFriend)
 
 	// Start the HTTP server on port 8080 and log any errors
 	fmt.Println("Server is running on port 8080")
