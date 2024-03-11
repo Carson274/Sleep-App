@@ -38,7 +38,7 @@ const App = () => {
   const renderScene = ({ route }) => {
     switch (route.key) {
       case 'first':
-        return <FriendsScreen />;
+        return <FriendsScreen username={username} />;
       case 'second':
         return <CheckInScreen username={username} />;
       case 'third':
@@ -49,6 +49,13 @@ const App = () => {
         return null;
     }
   };
+
+  // sign out the user
+  const signOut = () => {
+    setIsSignedIn(false);
+    setIsSignOut(true);
+    setUsername(null);
+  }
   
   // loading screen while we look for the user's token
   if (isSignedIn === null) {
@@ -67,14 +74,14 @@ const App = () => {
   return (
     <PaperProvider>
       <LinearGradient
-        colors={['#131313', '#131313', '#131313', '#131313', '#131313', '#131313', '#2C2D57']}
+        colors={['#131313', '#131313', '#131313', '#131313', '#131313', '#131313', '#131313', '#2C2D57']}
         style={{flex: 1}}
         start={{x: 0, y: 0}}
         end={{x: 0, y: 1}}
       >
       {isSignedIn ?
           <SafeAreaView style={ styles.safeAreaView }>
-            <TopBar />
+            <TopBar signOut={signOut}/>
             <TabView
               navigationState={{ index, routes }}
               renderScene={renderScene}

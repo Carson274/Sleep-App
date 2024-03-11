@@ -6,7 +6,7 @@ import * as SecureStore from 'expo-secure-store';
 import ProfileComponent from './ProfileComponent';
 import ShareComponent from './ShareComponent';
 
-const TopBar = () => {
+const TopBar = ({ signOut }) => {
   return (
     <SafeAreaView style={styles.safeAreaView}>
       <View style={styles.container}>
@@ -17,7 +17,7 @@ const TopBar = () => {
           <Logo width={48} height={48} />
         </View>
         <View style={styles.sideComponent}>
-          <ProfileComponent />
+          <ProfileComponent signOut={signOut}/>
         </View>
       </View>
     </SafeAreaView>
