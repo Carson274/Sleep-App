@@ -9,7 +9,7 @@ const CheckInComponent = ({ username, hideModal }) => {
   const trackSleep = async () => {
     hideModal();
     const date = new Date().toISOString().split('T')[0];
-    console.log(username, sleep, date);
+    // console.log(username, sleep, date);
 
     const response = await fetch(`http://localhost:8080/trackSleep?username=${username}&sleep=${sleep}&date=${date}`, {
       method: 'POST',
@@ -25,7 +25,7 @@ const CheckInComponent = ({ username, hideModal }) => {
       // if there's an error, log it
       .catch(error => console.error('Error:', error))
       // if there's no error, log the response
-      .then(response => console.log('Success:', response))
+      // .then(response => console.log('Success:', response))
   }
 
   return (

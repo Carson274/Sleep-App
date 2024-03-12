@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Button, ScrollView } from 'react-native';
-import { Searchbar } from 'react-native-paper';
+import { StyleSheet, View, Text, ScrollView } from 'react-native';
+import { Searchbar, Button } from 'react-native-paper';
+import AddFriendComponent from '../components/AddFriendComponent';
 
 const FriendsAddComponent = ({ route }) => {
     const { username } = route.params;
@@ -29,10 +30,6 @@ const FriendsAddComponent = ({ route }) => {
 
     };
 
-    const addFriend = async (username) => {
-    };
-
-
     return (
         <View style={styles.view}>
             <View style={styles.searchContainer}>
@@ -43,18 +40,22 @@ const FriendsAddComponent = ({ route }) => {
                     onChangeText={setSearchQuery}
                     value={searchQuery}
                 />
-                <Button title="Search" onPress={searchForUsers} />
+                <Button style={styles.button} mode="contained" onPress={searchForUsers}>Enter</Button>
+            </View>
+            <View>
                 {resultsFound ?
                     <ScrollView style={styles.scrollView}>
                         {users.map((user, index) => (
                             <View key={index} style={styles.userContainer}>
                                 <Text style={styles.text}>{user || 'Unnamed'}</Text>
-                                <Button title="Add" onPress={() => addFriend(user.name)} />
+                                <AddFriendComponent username={username} friendUsername={user}/>
                             </View>
                         ))}
                     </ScrollView>
                 : (
-                    <Text style={styles.text}>No users found.</Text>
+                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                        <Text style={styles.text}>No users found.</Text>
+                    </View>
                 )}
             </View>
         </View>
@@ -77,25 +78,35 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderBottomColor: '#959595',
         borderBottomWidth: 2,
-        marginTop: 20,
+
+        height: 60,
     },
     searchContainer: {
-        width: '100%',
+        width: '90%',
         alignItems: 'center',
         top: 0,
+        flexDirection: 'row',
+        marginTop: 20,
     },
     searchBar: {
-        width: '90%',
+        flex: 2,
         backgroundColor: 'transparent',
         borderColor: '#959595',
         borderWidth: 2,
         color: 'white',
         borderRadius: 20,
-        marginTop: 20,
+        height: 40,
     },
     text: {
         color: 'white',
         fontSize: 24,
+    },
+    button: {
+        flex: 0.75,
+        backgroundColor: '#206BB6',
+        borderRadius: 20,
+        height: 40,
+        marginLeft: 10,
     },
 });
 
