@@ -397,6 +397,34 @@ func AddFriend(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetUserFriends(w http.ResponseWriter, r *http.Request) {
+	// Get the username from the request
+	username := r.URL.Query().Get("username")
+
+	// Connect to MongoDB and get the user's friends
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := client.Database("users_db").Collection("users")
+	filter := bson.M{"username": username}
+	var result User
+
+	err := collection.FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		log.Printf("Error finding user: %v\n", err)
+		http.Error(w, "Error finding user", http.StatusInternalServerError)
+		return
+	}
+
+	// Log the friends
+	fmt.Println("Friends for user", username, ":", result.Friends)
+
+	// Send the response
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(result.Friends); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func main() {
 
 	connectToDB()
@@ -421,6 +449,8 @@ func main() {
 	http.HandleFunc("/checkIfFriends", CheckIfFriends)
 
 	http.HandleFunc("/addFriend", AddFriend)
+
+	http.HandleFunc("/getUserFriends", GetUserFriends)
 
 	// Start the HTTP server on port 8080 and log any errors
 	fmt.Println("Server is running on port 8080")
