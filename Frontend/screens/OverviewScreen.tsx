@@ -39,9 +39,9 @@ const OverviewScreen = ({ username }) => {
         console.log(lastData);
     }
 
-    useEffect(() => {
-        console.log(sleepData);
-    }, [sleepData]);
+    // useEffect(() => {
+    //     console.log(sleepData);
+    // }, [sleepData]);
 
     // data for the bar chart
     const barData = {
