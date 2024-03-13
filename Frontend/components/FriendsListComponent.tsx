@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, Text, Button, ScrollView } from 'react-native';
 import RemoveFriendComponent from '../components/RemoveFriendComponent';
+import { useFocusEffect } from '@react-navigation/native';
 
 const FriendsListComponent = ({ route }) => {
     const { username } = route.params;
@@ -10,7 +11,7 @@ const FriendsListComponent = ({ route }) => {
     const [refresh, setRefresh] = useState(false);
 
     // call the backend to get the user's sleep data
-    const getUserFriends = async () => {
+    const getUserFriends = useCallback(async () => {
         const response = await fetch(`http://localhost:8080/getUserFriends?username=${username}`, {
             method: 'GET',
             headers: {
@@ -25,12 +26,17 @@ const FriendsListComponent = ({ route }) => {
         }
         
         console.log(`${username}'s friends: ` + friendsList);
-    }
+    }, [username]);
 
     useEffect(() => {
         getUserFriends();
-        setRefresh(false);
     }, [username, refresh]);
+
+    useFocusEffect(
+        useCallback(() => {
+            getUserFriends();
+        }, [getUserFriends])
+    );
 
     return (
         <View style={styles.view}>
