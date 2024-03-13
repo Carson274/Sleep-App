@@ -49,12 +49,12 @@ const CompeteScreen = ({ username, alreadyCheckedIn }) => {
         const userResponse = await getUserStats(username);
         allUserStats[username] = userResponse;
 
-        console.log(friendsList);
+        // console.log(friendsList);
 
     
         // fetch each friend's stats
         for (const friend of friendsList) {
-            console.log(friend);
+            // console.log(friend);
             const friendResponse = await getUserStats(friend);
             allUserStats[friend] = friendResponse;
         }
@@ -89,6 +89,71 @@ const CompeteScreen = ({ username, alreadyCheckedIn }) => {
     }, [friendsList]);
 
     // find the top three users and their scores for the week
+    const getLast7DaysDates = () => {
+    return [...Array(7)].map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return d.toISOString().split('T')[0];
+    }).reverse();
+  };
+
+  const getUserWeeklyStats = async (user) => {
+    const response = await fetch(`http://localhost:8080/getSleepData?username=${user}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const data = await response.json();
+    const last7Days = getLast7DaysDates();
+    let totalSleep = 0;
+    let daysCounted = 0;
+  
+    last7Days.forEach(date => {
+      const dayData = data.find(day => new Date(day.Date).toISOString().split('T')[0] === date);
+      if(dayData) {
+        totalSleep += dayData.HoursSlept;
+        daysCounted++;
+      }
+    });
+  
+    return daysCounted > 0 ? (totalSleep / daysCounted) : 0;
+  };
+  
+  const updateWeeklyData = async () => {
+    let allUserWeeklyStats = {};
+
+    const userWeeklyStats = await getUserWeeklyStats(username);
+    allUserWeeklyStats[username] = userWeeklyStats;
+
+    for (const friend of friendsList) {
+      const friendWeeklyStats = await getUserWeeklyStats(friend);
+      allUserWeeklyStats[friend] = friendWeeklyStats;
+    }
+
+    const userScoresWeek = Object.entries(allUserWeeklyStats).map(([user, weeklyScore]) => ({
+      user,
+      weeklyScore
+    }));
+  
+    userScoresWeek.sort((a, b) => b.weeklyScore - a.weeklyScore);
+    const [firstWeek, secondWeek, thirdWeek] = userScoresWeek.slice(0, 3);
+
+    // round the scores to two decimal places
+    firstWeek.weeklyScore = Math.round(firstWeek.weeklyScore * 10) / 10;
+    secondWeek.weeklyScore = Math.round(secondWeek.weeklyScore * 10) / 10;
+    thirdWeek.weeklyScore = Math.round(thirdWeek.weeklyScore * 10) / 10;
+  
+    setFirstHighestUserWithScoreWeek(firstWeek);
+    setSecondHighestUserWithScoreWeek(secondWeek);
+    setThirdHighestUserWithScoreWeek(thirdWeek);
+  };
+
+    useEffect(() => {
+        if (friendsList.length > 0) {
+            updateWeeklyData();
+        }
+    }, [friendsList]);
 
     return (
         <View style={styles.view}>
@@ -139,7 +204,49 @@ const CompeteScreen = ({ username, alreadyCheckedIn }) => {
                 </View>
             </View>
             <View style={styles.container}>
-                <Button title="Weekly" onPress={getUserFriends} />
+                <Text style={styles.containerTitle}>Daily Average</Text>
+                <View style={styles.userContainer}>
+                    <View style={styles.scoreContainer}>
+                        <Text style={styles.userText}>1. {firstHighestUserWithScoreWeek?.user}</Text>
+                        <Text style={styles.scoreText}>{firstHighestUserWithScoreWeek?.weeklyScore}</Text>
+                    </View>
+                    <View style={{...styles.scoreLength, width: `${(firstHighestUserWithScoreWeek?.weeklyScore / 12) * 100}%`}}>
+                        <LinearGradient
+                            start={{x: 0, y: 0}}
+                            end={{x: 1, y: 0}}
+                            colors={['#192f6a', '#3b5998', '#4c669f']}
+                            style={styles.gradient}
+                        />
+                    </View>
+                </View>
+                <View style={styles.userContainer}>
+                    <View style={styles.scoreContainer}>
+                        <Text style={styles.userText}>2. {secondHighestUserWithScoreWeek?.user}</Text>
+                        <Text style={styles.scoreText}>{secondHighestUserWithScoreWeek?.weeklyScore}</Text>
+                    </View>
+                    <View style={{...styles.scoreLength, width: `${(secondHighestUserWithScoreWeek?.weeklyScore / 12) * 100}%`}}>
+                        <LinearGradient
+                            start={{x: 0, y: 0}}
+                            end={{x: 1, y: 0}}
+                            colors={['#192f6a', '#3b5998', '#4c669f']}
+                            style={styles.gradient}
+                        />
+                    </View>
+                </View>
+                <View style={styles.userContainer}>
+                    <View style={styles.scoreContainer}>
+                        <Text style={styles.userText}>3. {thirdHighestUserWithScoreWeek?.user}</Text>
+                        <Text style={styles.scoreText}>{thirdHighestUserWithScoreWeek?.weeklyScore}</Text>
+                    </View>
+                    <View style={{...styles.scoreLength, width: `${(thirdHighestUserWithScoreWeek?.weeklyScore / 12) * 100}%`}}>
+                        <LinearGradient
+                            start={{x: 0, y: 0}}
+                            end={{x: 1, y: 0}}
+                            colors={['#192f6a', '#3b5998', '#4c669f']}
+                            style={styles.gradient}
+                        />
+                    </View>
+                </View>
             </View>
         </View>
     );
