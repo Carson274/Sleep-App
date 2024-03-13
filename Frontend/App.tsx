@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, SafeAreaView, useWindowDimensions, AppRegistry } from 'react-native';
 import FriendsScreen from './screens/FriendsScreen'
 import CheckInScreen from './screens/CheckInScreen'
@@ -23,9 +23,14 @@ const App = () => {
   const [isSignOut, setIsSignOut] = React.useState(false);
   const [userToken, setUserToken] = React.useState(null);
   const [username, setUsername] = React.useState(null);
+  const [alreadyCheckedIn, setAlreadyCheckedIn] = React.useState(false);
 
   // set the default page to be the check in screen
   const [index, setIndex] = React.useState(1);
+
+  useEffect(() => {
+    setIndex(1);
+  }, [isSignOut]);
 
   // the routes for the tab view
   const [routes] = React.useState([
@@ -40,9 +45,9 @@ const App = () => {
       case 'first':
         return <FriendsScreen username={username} />;
       case 'second':
-        return <CheckInScreen username={username} />;
+        return <CheckInScreen username={username} setAlreadyCheckedIn={setAlreadyCheckedIn} alreadyCheckedIn={alreadyCheckedIn} />;
       case 'third':
-        return <OverviewScreen username={username} />;
+        return <OverviewScreen username={username} alreadyCheckedIn={alreadyCheckedIn} />;
       case 'fourth':
         return <CompeteScreen />;
       default:

@@ -3,11 +3,12 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Button } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 
-const CheckInComponent = ({ username, hideModal }) => {
+const CheckInComponent = ({ username, hideModal, setAlreadyCheckedIn }) => {
   const [sleep, setSleep] = React.useState(0);
 
   const trackSleep = async () => {
     hideModal();
+    setAlreadyCheckedIn(true);
     const date = new Date().toISOString().split('T')[0];
     // console.log(username, sleep, date);
 

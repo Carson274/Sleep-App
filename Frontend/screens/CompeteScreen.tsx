@@ -1,6 +1,8 @@
 import React from 'react';
 import { StyleSheet, SafeAreaView, View, Text, Button } from 'react-native';
 
+
+
 const CompeteScreen = () => {
     return (
         <View style={styles.view}>

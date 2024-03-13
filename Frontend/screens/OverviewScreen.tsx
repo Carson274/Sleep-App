@@ -5,7 +5,7 @@ import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 const { width: screenWidth } = Dimensions.get('window')
 
-const OverviewScreen = ({ username }) => {
+const OverviewScreen = ({ username, alreadyCheckedIn }) => {
     const [sleepData, setSleepData] = React.useState([]);
     const [labels, setLabels] = React.useState([]);
 
@@ -53,9 +53,10 @@ const OverviewScreen = ({ username }) => {
         setLabels(last7DaysLabels);
     }
 
-    // useEffect(() => {
-    //     console.log(sleepData);
-    // }, [sleepData]);
+    useEffect(() => {
+        console.log('useEffect called in OverViewScreen');
+        getUserStats();
+    }, [alreadyCheckedIn]);
 
     // data for the bar chart
     const barData = {

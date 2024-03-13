@@ -25,7 +25,7 @@ const FriendsListComponent = ({ route }) => {
             setResultsFound(true);
         }
         
-        console.log(`${username}'s friends: ` + friendsList);
+        // console.log(`${username}'s friends: ` + friendsList);
     }, [username]);
 
     useEffect(() => {
@@ -51,7 +51,7 @@ const FriendsListComponent = ({ route }) => {
                 </ScrollView>
             : (
                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={styles.text}>No users found.</Text>
+                    <Text style={styles.text}>You have no friends :(</Text>
                 </View>
             )}
         </View>

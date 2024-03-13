@@ -5,9 +5,8 @@ import AddIcon from '../assets/icons/AddIcon.svg';
 import CheckInComponent from '../components/CheckInComponent';
 import { BlurView } from 'expo-blur';
 
-const CheckInScreen = ({ username }) => {
+const CheckInScreen = ({ username, setAlreadyCheckedIn, alreadyCheckedIn }) => {
     const [visible, setVisible] = React.useState(false);
-    const [alreadyCheckedIn, setAlreadyCheckedIn] = useState(false);
 
     const checkIfAlreadyCheckedIn = async () => {
         const date = new Date().toISOString().split('T')[0];
@@ -23,15 +22,20 @@ const CheckInScreen = ({ username }) => {
     }
 
     const checkIfAdded = async () => {
-        const response = await checkIfAlreadyCheckedIn();
+        const response = await checkIfAlreadyCheckedIn()
+        console.log('we got to the if statement')
+        console.log('response.result: ', response.result)
+        console.log('alreadyCheckedIn: ', alreadyCheckedIn)
         if(response.result === 1) {
             setAlreadyCheckedIn(true);
         }
+        console.log('alreadyCheckedIn: ', alreadyCheckedIn)
     }
 
     useEffect(() => {
+        console.log('Checking if already checked in -- CheckInScreen')
         checkIfAdded();
-    }, []);
+    }, [alreadyCheckedIn]);
 
     const showModal = () => {
         setVisible(true);
@@ -54,7 +58,7 @@ const CheckInScreen = ({ username }) => {
                         style={StyleSheet.absoluteFill}
                         tint="dark"
                     >
-                        <CheckInComponent username={username} hideModal={hideModal}/>
+                        <CheckInComponent username={username} hideModal={hideModal} setAlreadyCheckedIn={setAlreadyCheckedIn} />
                     </BlurView>
                     </Modal>
                     </Portal>
