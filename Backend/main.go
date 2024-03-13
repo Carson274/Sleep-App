@@ -464,6 +464,42 @@ func RemoveFriend(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func CheckIfCheckedIn(w http.ResponseWriter, r *http.Request) {
+	// Get the username and date from the request
+	username := r.URL.Query().Get("username")
+	date := r.URL.Query().Get("date")
+
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]int{"result": 0}
+
+	// Get the user's sleep stats from the database
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := client.Database("users_db").Collection("users")
+	filter := bson.M{"username": username}
+	var result User
+
+	err := collection.FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		log.Printf("Error finding user: %v\n", err)
+		http.Error(w, "Error finding user", http.StatusInternalServerError)
+		return
+	}
+
+	// Check if the date is in the user's sleep stats
+	for _, sleepStat := range result.SleepStats {
+		if sleepStat.Date == date {
+			response["result"] = 1
+			break
+		}
+	}
+
+	// Send the response
+	if err := json.NewEncoder(w).Encode(response); err != nil {	
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func main() {
 
 	connectToDB()
@@ -492,6 +528,8 @@ func main() {
 	http.HandleFunc("/getUserFriends", GetUserFriends)
 
 	http.HandleFunc("/removeFriend", RemoveFriend)
+
+	http.HandleFunc("/checkIfCheckedIn", CheckIfCheckedIn)
 
 	// Start the HTTP server on port 8080 and log any errors
 	fmt.Println("Server is running on port 8080")
