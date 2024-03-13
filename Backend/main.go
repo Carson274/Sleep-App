@@ -416,7 +416,7 @@ func GetUserFriends(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Log the friends
-	fmt.Println("Friends for user", username, ":", result.Friends)
+	// fmt.Println("Friends for user", username, ":", result.Friends)
 
 	// Send the response
 	w.Header().Set("Content-Type", "application/json")
@@ -568,6 +568,10 @@ func main() {
 	http.HandleFunc("/checkIfCheckedIn", CheckIfCheckedIn)
 
 	http.HandleFunc("/deleteCheckIn", DeleteCheckIn)
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "Server is live!!!")
+	})
 
 	// Start the HTTP server on port 8080 and log any errors
 	fmt.Println("Server is running on port 8080")
