@@ -573,9 +573,13 @@ func main() {
 		fmt.Fprint(w, "Server is live!!!")
 	})
 
-	// Start the HTTP server on port 8080 and log any errors
-	fmt.Println("Server is running on port 8080")
-	err := http.ListenAndServe(":8080", nil)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	fmt.Println("Server is running on port: ", port)
+	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		fmt.Println("Error starting server: ", err)
 	}
