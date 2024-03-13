@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Animated } from 'react-native';
 import { Modal, Portal, Text, Button, PaperProvider } from 'react-native-paper';
 import AddIcon from '../assets/icons/AddIcon.svg';
 import CheckInComponent from '../components/CheckInComponent';
@@ -7,6 +7,9 @@ import { BlurView } from 'expo-blur';
 
 const CheckInScreen = ({ username, setAlreadyCheckedIn, alreadyCheckedIn }) => {
     const [visible, setVisible] = React.useState(false);
+
+    const sizeAnim = React.useRef(new Animated.Value(60)).current;
+    const opacityAnim = React.useRef(new Animated.Value(1)).current;
 
     const checkIfAlreadyCheckedIn = async () => {
         const date = new Date().toISOString().split('T')[0];
@@ -45,6 +48,24 @@ const CheckInScreen = ({ username, setAlreadyCheckedIn, alreadyCheckedIn }) => {
         // console.log(username);
     }
     const hideModal = () => setVisible(false);
+
+    useEffect(() => {
+        setTimeout(() => {
+            Animated.parallel([
+                Animated.timing(sizeAnim, {
+                    toValue: 500,
+                    duration: 1300,
+                    useNativeDriver: false,
+                }),
+                Animated.timing(opacityAnim, {
+                    toValue: 0,
+                    duration: 1000,
+                    useNativeDriver: false,
+                })
+            ]).start();
+        }, 150);
+    }, []);
+    
   
     return (
         <View style={styles.container}>
@@ -65,10 +86,15 @@ const CheckInScreen = ({ username, setAlreadyCheckedIn, alreadyCheckedIn }) => {
                     </BlurView>
                     </Modal>
                     </Portal>
-                    <Text style={styles.text}>Check In</Text>
-                    <Button style={{marginTop: 30}} onPress={showModal}>
-                        <AddIcon height={60} width={60} />
-                    </Button>
+                    <Text style={styles.modifiedText}>Check In</Text>
+                    <View style={styles.animationContainer}>
+                    <Animated.View style={[styles.expandingCircle, { height: sizeAnim, width: sizeAnim, borderRadius: sizeAnim, opacity: opacityAnim }]}></Animated.View>
+                        <Button onPress={showModal} style={styles.buttonStyle} >
+                            <View style={styles.iconContainer}>
+                                <AddIcon height={60} width={60} />
+                            </View>
+                        </Button>
+                    </View>
                 </>
             )}
         </View>
@@ -76,6 +102,22 @@ const CheckInScreen = ({ username, setAlreadyCheckedIn, alreadyCheckedIn }) => {
   };
 
 const styles = StyleSheet.create({
+    animationContainer: {
+        position: 'relative',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 300,
+        width: 300,
+        backgroundColor: 'transparent',
+    },
+    expandingCircle: {
+        position: 'absolute',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 150,
+        backgroundColor: '#D9D9D9',
+        zIndex: 1,
+    },
     container: {
         flex: 1,
         justifyContent: 'center',
@@ -92,10 +134,26 @@ const styles = StyleSheet.create({
         color: 'white',
         textAlign: 'center',
     },
+    modifiedText: {
+        fontSize: 30,
+        color: 'white',
+        textAlign: 'center',
+        marginTop: 80,
+        marginBottom: -80,
+    },
     modal: {
         backgroundColor: 'transparent',
         height: '100%',
     },
+    iconContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    buttonStyle: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    
 });
   
 export default CheckInScreen;
