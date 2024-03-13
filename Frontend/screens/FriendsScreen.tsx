@@ -17,11 +17,11 @@ const FriendsScreen = ({ username }) => {
           tabBarActiveTintColor: 'white',
           tabBarLabelStyle: { fontSize: 16, textTransform: 'none'  },
           tabBarStyle: { backgroundColor: 'transparent' },
-          tabBarIndicatorStyle: { backgroundColor: '#666CFF' },
+          tabBarIndicatorStyle: { backgroundColor: 'white' },
         }}
       >
         <Tab.Screen name="Friends" component={FriendsListComponent} initialParams={{ username: username }} />
-        <Tab.Screen name="Pending" component={FriendsPendingComponent} initialParams={{ username: username }} />
+        {/* <Tab.Screen name="Pending" component={FriendsPendingComponent} initialParams={{ username: username }} /> */}
         <Tab.Screen name="Add" component={FriendsAddComponent} initialParams={{ username: username }} />
       </Tab.Navigator>
     </NavigationContainer>

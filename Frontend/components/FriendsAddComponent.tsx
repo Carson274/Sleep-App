@@ -78,7 +78,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderBottomColor: '#959595',
         borderBottomWidth: 2,
-
         height: 60,
     },
     searchContainer: {
@@ -95,7 +94,7 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         color: 'white',
         borderRadius: 20,
-        height: 40,
+        height: 60,
     },
     text: {
         color: 'white',
@@ -105,8 +104,9 @@ const styles = StyleSheet.create({
         flex: 0.75,
         backgroundColor: '#206BB6',
         borderRadius: 20,
-        height: 40,
+        height: 60,
         marginLeft: 10,
+        justifyContent: 'center',
     },
 });
 

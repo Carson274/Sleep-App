@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Modal, Portal, Text, Button, PaperProvider } from 'react-native-paper';
 import AddIcon from '../assets/icons/AddIcon.svg';
@@ -7,7 +7,32 @@ import { BlurView } from 'expo-blur';
 
 const CheckInScreen = ({ username }) => {
     const [visible, setVisible] = React.useState(false);
-  
+    const [alreadyCheckedIn, setAlreadyCheckedIn] = useState(false);
+
+    const checkIfAlreadyCheckedIn = async () => {
+        const date = new Date().toISOString().split('T')[0];
+        const response = await fetch(`http://localhost:8080/checkIfCheckedIn?username=${username}&date=${date}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        
+        return response;
+    }
+
+    const checkIfAdded = async () => {
+        const response = await checkIfAlreadyCheckedIn();
+        if(response.result === 1) {
+            setAlreadyCheckedIn(true);
+        }
+    }
+
+    useEffect(() => {
+        checkIfAdded();
+    }, []);
+
     const showModal = () => {
         setVisible(true);
         console.log(username);
@@ -16,21 +41,29 @@ const CheckInScreen = ({ username }) => {
   
     return (
         <View style={styles.container}>
-            <Portal>
-            <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modal}>
-            <BlurView
-                intensity={50}
-                style={StyleSheet.absoluteFill}
-                tint="dark"
-            >
-                <CheckInComponent username={username} hideModal={hideModal}/>
-            </BlurView>
-            </Modal>
-            </Portal>
-            <Text style={styles.text}>Check In</Text>
-            <Button style={{marginTop: 30}} onPress={showModal}>
-                <AddIcon height={60} width={60} />
-            </Button>
+            {alreadyCheckedIn ? (
+                <View style={styles.textContainer}>
+                    <Text style={styles.text}>You've already checked in today!</Text>
+                </View>
+            ) : (
+                <>
+                    <Portal>
+                    <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modal}>
+                    <BlurView
+                        intensity={50}
+                        style={StyleSheet.absoluteFill}
+                        tint="dark"
+                    >
+                        <CheckInComponent username={username} hideModal={hideModal}/>
+                    </BlurView>
+                    </Modal>
+                    </Portal>
+                    <Text style={styles.text}>Check In</Text>
+                    <Button style={{marginTop: 30}} onPress={showModal}>
+                        <AddIcon height={60} width={60} />
+                    </Button>
+                </>
+            )}
         </View>
     );
   };
@@ -41,9 +74,16 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    textContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '70%',
+    },
     text: {
-        fontSize: 36,
+        fontSize: 30,
         color: 'white',
+        textAlign: 'center',
     },
     modal: {
         backgroundColor: 'transparent',
