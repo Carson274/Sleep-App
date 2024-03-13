@@ -500,6 +500,42 @@ func CheckIfCheckedIn(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func DeleteCheckIn(w http.ResponseWriter, r *http.Request) {
+	// Get the username and date from the request
+	username := r.URL.Query().Get("username")
+	date := r.URL.Query().Get("date")
+
+	// Connect to MongoDB and update the user's sleep stats
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := client.Database("users_db").Collection("users")
+
+	// Find the user and pull the sleep stat with the given date
+	filter := bson.M{"username": username}
+	update := bson.M{"$pull": bson.M{"sleepStats": bson.M{"date": date}}}
+	result, err := collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		log.Printf("Error updating user sleep stats: %v\n", err)
+		http.Error(w, "Error updating sleep stats", http.StatusInternalServerError)
+		return
+	}
+
+	if result.MatchedCount == 0 {
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	// Print success message
+	fmt.Println("Sleep stat removed successfully")
+
+	// Send the response
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]string{"result": "success"}
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func main() {
 
 	connectToDB()
@@ -530,6 +566,8 @@ func main() {
 	http.HandleFunc("/removeFriend", RemoveFriend)
 
 	http.HandleFunc("/checkIfCheckedIn", CheckIfCheckedIn)
+
+	http.HandleFunc("/deleteCheckIn", DeleteCheckIn)
 
 	// Start the HTTP server on port 8080 and log any errors
 	fmt.Println("Server is running on port 8080")
