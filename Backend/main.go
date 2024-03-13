@@ -47,7 +47,7 @@ func HashPassword(password string) (string, error) {
 func connectToDB() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("Warning: .env file not found")
 	}
 
 	// get the environment variable for the connection string
