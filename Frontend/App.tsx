@@ -49,7 +49,7 @@ const App = () => {
       case 'third':
         return <OverviewScreen username={username} alreadyCheckedIn={alreadyCheckedIn} />;
       case 'fourth':
-        return <CompeteScreen />;
+        return <CompeteScreen username={username} alreadyCheckedIn={alreadyCheckedIn} />;
       default:
         return null;
     }

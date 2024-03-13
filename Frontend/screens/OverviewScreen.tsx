@@ -109,7 +109,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 20,
     },
     text: {
         color: 'white',
@@ -117,6 +116,7 @@ const styles = StyleSheet.create({
     },
     barChart: {
         padding: 40,
+        marginRight: 20,
     }
 });
 
