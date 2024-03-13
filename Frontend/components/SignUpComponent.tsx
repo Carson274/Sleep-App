@@ -5,7 +5,6 @@ import Logo from '../assets/sleep_svg.svg';
 
 const SignUpComponent = ({ username, setUsername, setIsSignedIn, toggleScreen }) => {
   const [password, setPassword] = React.useState("");
-  const [isAvailable, setIsAvailable] = React.useState(false);
 
   const checkAvailability = async () => {
     // if the username fetch returns 1, then the username is available
@@ -15,9 +14,8 @@ const SignUpComponent = ({ username, setUsername, setIsSignedIn, toggleScreen })
   }
 
   const SignUp = async () => {
-    // set isAvailable
-    setIsAvailable(await checkAvailability());
-    if (isAvailable) {
+    const available = await checkAvailability();
+    if (available) {
       // if the username is available, then create the user
       const response = await fetch(`http://localhost:8080/signup?username=${username}&password=${password}`, {
         method: 'POST',
@@ -26,7 +24,7 @@ const SignUpComponent = ({ username, setUsername, setIsSignedIn, toggleScreen })
         },
         body: JSON.stringify({ username: username, password: password }),
       })
-        .then(response => response.json())
+        .then(response => response.json());
       if (response) {
         setIsSignedIn(true);
       }
@@ -39,6 +37,7 @@ const SignUpComponent = ({ username, setUsername, setIsSignedIn, toggleScreen })
       setPassword("");
     }
   }
+  
 
   return (
     <View style={styles.container}>
