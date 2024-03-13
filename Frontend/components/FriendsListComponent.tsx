@@ -35,6 +35,7 @@ const FriendsListComponent = ({ route }) => {
     useFocusEffect(
         useCallback(() => {
             getUserFriends();
+            setRefresh(false);
         }, [getUserFriends])
     );
 

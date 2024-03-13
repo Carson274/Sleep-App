@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import ProfileIconDark from '../assets/icons/ProfileIconDark.svg';
 import { Modal, Portal, Text, Button, PaperProvider } from 'react-native-paper';
 
@@ -24,7 +24,9 @@ const ProfileComponent = ({ signOut }) => {
           </Button>
         </Modal>
       </Portal>
-      <ProfileIconDark onPress={showSignOut}/>
+      <TouchableOpacity onPress={showSignOut}>
+        <ProfileIconDark />
+      </TouchableOpacity>
     </View>
   );
 };

@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import Logo from '../assets/sleep_svg.svg';
 
 const SignUpComponent = ({ username, setUsername, setIsSignedIn, toggleScreen }) => {
   const [password, setPassword] = React.useState("");
+  const [usernameOutlineColor, setUsernameOutlineColor] = useState('white');
 
   const checkAvailability = async () => {
     // if the username fetch returns 1, then the username is available
@@ -27,10 +28,13 @@ const SignUpComponent = ({ username, setUsername, setIsSignedIn, toggleScreen })
         .then(response => response.json());
       if (response) {
         setIsSignedIn(true);
+        setUsernameOutlineColor('white');
       }
     } else {
       // if the username is not available, then alert the user
       alert('Username is not available');
+      setUsernameOutlineColor('red');
+      
       
       // clear the username and password fields
       setUsername("");
@@ -54,7 +58,7 @@ const SignUpComponent = ({ username, setUsername, setIsSignedIn, toggleScreen })
           value={username}
           mode="outlined"
           onChangeText={text => setUsername(text)}
-          outlineColor='white'
+          outlineColor={usernameOutlineColor}
           activeOutlineColor='#206BB6'
           selectionColor='#206BB6'
           textColor='white'

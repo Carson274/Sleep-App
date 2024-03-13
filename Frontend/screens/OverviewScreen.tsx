@@ -54,7 +54,7 @@ const OverviewScreen = ({ username, alreadyCheckedIn }) => {
     }
 
     useEffect(() => {
-        console.log('useEffect called in OverViewScreen');
+        // console.log('useEffect called in OverViewScreen');
         getUserStats();
     }, [alreadyCheckedIn]);
 

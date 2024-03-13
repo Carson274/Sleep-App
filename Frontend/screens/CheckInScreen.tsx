@@ -23,23 +23,26 @@ const CheckInScreen = ({ username, setAlreadyCheckedIn, alreadyCheckedIn }) => {
 
     const checkIfAdded = async () => {
         const response = await checkIfAlreadyCheckedIn()
-        console.log('we got to the if statement')
-        console.log('response.result: ', response.result)
-        console.log('alreadyCheckedIn: ', alreadyCheckedIn)
+        // console.log('we got to the if statement')
+        // console.log('response.result: ', response.result)
+        // console.log('alreadyCheckedIn: ', alreadyCheckedIn)
         if(response.result === 1) {
             setAlreadyCheckedIn(true);
         }
-        console.log('alreadyCheckedIn: ', alreadyCheckedIn)
+        else {
+            setAlreadyCheckedIn(false);
+        }
+        // console.log('alreadyCheckedIn: ', alreadyCheckedIn)
     }
 
     useEffect(() => {
-        console.log('Checking if already checked in -- CheckInScreen')
+        // console.log('Checking if already checked in -- CheckInScreen')
         checkIfAdded();
     }, [alreadyCheckedIn]);
 
     const showModal = () => {
         setVisible(true);
-        console.log(username);
+        // console.log(username);
     }
     const hideModal = () => setVisible(false);
   

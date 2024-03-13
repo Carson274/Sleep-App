@@ -22,8 +22,8 @@ const RemoveFriendComponent = ({ setRefresh, username, friendUsername }) => {
     const response = await removeFriendRequest();
     if(response.result === "success") {
       setRemoved(true);
-      setRefresh(true);
     }
+    setRefresh(true);
   }
 
   return (

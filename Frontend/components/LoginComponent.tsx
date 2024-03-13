@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import Logo from '../assets/sleep_svg.svg';
@@ -6,6 +6,7 @@ import * as SecureStore from 'expo-secure-store';
 
 const LoginComponent = ({ username, setUsername, setIsSignedIn, toggleScreen }) => {
   const [password, setPassword] = React.useState("");
+  const [usernameOutlineColor, setUsernameOutlineColor] = useState('white');
 
   const Authenticate = async () => {
     const response = await fetch(`http://localhost:8080/authenticate?username=${username}&password=${password}`, {
@@ -26,7 +27,9 @@ const LoginComponent = ({ username, setUsername, setIsSignedIn, toggleScreen }) 
     const authResponse = await Authenticate();
     if (authResponse.result === 1) {
       setIsSignedIn(true);
+      setUsernameOutlineColor('white');
     } else {
+      setUsernameOutlineColor('red');
       alert('Username or password is incorrect');
       setUsername("");
       setPassword("");
@@ -49,7 +52,7 @@ const LoginComponent = ({ username, setUsername, setIsSignedIn, toggleScreen }) 
           value={username}
           mode="outlined"
           onChangeText={text => setUsername(text)}
-          outlineColor='white'
+          outlineColor={usernameOutlineColor}
           activeOutlineColor='#206BB6'
           selectionColor='#206BB6'
           textColor='white'
